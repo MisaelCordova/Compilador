@@ -70,52 +70,82 @@ namespace LexicoProfessor
                 { 51, "$" },
                 { 52, "-" },
             };
+            int pegarkey(string valor)
+            {
+                foreach (KeyValuePair<int, string> item in tokensLinguagem)
+                {
+                    if (item.Value == valor)
+                        return item.Key;
+                }
+                return 0;   
+                   
+                
+            }
+            
+            
             // Definição da especificação de tokens
             Tuple<string, string>[] tokenSpec = new Tuple<string, string>[]
             {
                 Tuple.Create("NUMBER", @"\d+"),
-                Tuple.Create("WORD", @"\w+"),
-                Tuple.Create("WHITESPACE", @"\s+")
+                Tuple.Create("WORD", @"[A-Za-z_]+\d*"),
+                Tuple.Create("MISMATCH", @"\."),
+                Tuple.Create("SKIP",@"[\t]+")
+               // Tuple.Create("WHITESPACE", @"\s+")
+                
             };
 
             // Criando a expressão regular que reconhece cada tipo de token
             string[] tokenRegexes = tokenSpec.Select(pair => $"(?<{pair.Item1}>{pair.Item2})").ToArray();
-            foreach(string regex in tokenRegexes){
-                Console.WriteLine(regex);
-            }
+          
             string finalRegex = string.Join("|", tokenRegexes);
+            Console.WriteLine(finalRegex);
             Regex tokenizer = new Regex(finalRegex);
 
             // Exemplo de uso do tokenizer
-            string text = "{ 42 nomechar the answer.}";
+            string text = " .>=>=and<=+ the ";
             MatchCollection matches = tokenizer.Matches(text);
 
             foreach (Match match in matches)
             {
                 Console.WriteLine($"Token: {match.Value}, Tipo: {GetTokenType(match)}");
+                TokensEncontrados tokenEncontrado = new TokensEncontrados();
                 if (GetTokenType(match) == "NUMBER")
                 {
                     //verificar se é int ou real
                 }
                 if (GetTokenType(match) == "WORD")
                 {
-
                     //como fazer a distinção quando é palavra reservadar ou identificador
                     var PalavraReservada = (from item in tokensLinguagem
                                             where item.Value == match.Value         
                                             select item.Key).ToList();
-                    TokensEncontrados teste = new TokensEncontrados();
                     if (PalavraReservada.Count == 0)
                     {
-                        
-                        Console.WriteLine("é um identificador");
+                        tokenEncontrado.Codigo = 16;
+                        tokenEncontrado.Token = "identificador";
                     }
-                    
+             
+
                 }
-
-
+                if (GetTokenType(match) == "MISMATCH")
+                {
+                    tokenEncontrado.Codigo = pegarkey(match.Value);
+                    if(tokenEncontrado.Codigo == 0)
+                    {
+                        
+                        Console.WriteLine("Caractere irreconhecivel");
+                    }
+                    tokenEncontrado.Token = match.Value;
+                }
+                
+                tokensEncontrados.Add(tokenEncontrado);
+            }
+            foreach(var linha in tokensEncontrados)
+            {
+                Console.WriteLine(linha.Codigo.ToString(), linha.Token);
             }
             
+
             // Função para determinar o tipo de um token com base no grupo de captura correspondente
             string GetTokenType(Match match)
             {

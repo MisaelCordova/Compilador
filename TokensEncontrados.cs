@@ -23,8 +23,8 @@ namespace LexicoProfessor
         }
         public int Codigo
         {
-            get => codigo;
-            set => codigo = value;
+            get { return codigo; }
+            set { codigo = value; }
         }
         public string Token
         {
