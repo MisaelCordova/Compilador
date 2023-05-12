@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,7 @@ namespace LexicoProfessor
     {
         static void Main(string[] args)
         {
-            
+
             List<TokensEncontrados> tokensEncontrados = new List<TokensEncontrados>();
             IDictionary<int, string> tokensLinguagem = new Dictionary<int, string>()
             {
@@ -77,38 +78,51 @@ namespace LexicoProfessor
                     if (item.Value == valor)
                         return item.Key;
                 }
-                return 0;   
-                   
-                
+                return 0;
+
+
             }
-            
-            
+            string pegaValor(string valor)
+            {
+                foreach (KeyValuePair<int, string> item in tokensLinguagem)
+                {
+                    if (item.Value == valor)
+                        return item.Value;
+                }
+                return "";
+            }
+
             // Definição da especificação de tokens
             Tuple<string, string>[] tokenSpec = new Tuple<string, string>[]
             {
                 Tuple.Create("NUMBER", @"\d+"),
                 Tuple.Create("WORD", @"[A-Za-z_]+\d*"),
-                Tuple.Create("MISMATCH", @"\."),
-                Tuple.Create("SKIP",@"[\t]+")
-               // Tuple.Create("WHITESPACE", @"\s+")
-                
+                Tuple.Create("SKIP",@"[\t]+"),
+                Tuple.Create("MAIORIGUAL",@">=+"),
+                Tuple.Create("MENORIGUAL",@"<=+"),
+                Tuple.Create("DIFERENTE",@"<>"),
+                Tuple.Create("PONTOPONTO",@"\.\."),
+               // Tuple.Create("WHITESPACE", @"\s+"),
+                Tuple.Create("MISMATCH", @"."),
+
             };
 
             // Criando a expressão regular que reconhece cada tipo de token
             string[] tokenRegexes = tokenSpec.Select(pair => $"(?<{pair.Item1}>{pair.Item2})").ToArray();
-          
+
             string finalRegex = string.Join("|", tokenRegexes);
             Console.WriteLine(finalRegex);
             Regex tokenizer = new Regex(finalRegex);
 
             // Exemplo de uso do tokenizer
-            string text = " .>=>=and<=+ the ";
+            string text = " + .. {} /";
             MatchCollection matches = tokenizer.Matches(text);
-
+            
             foreach (Match match in matches)
             {
                 Console.WriteLine($"Token: {match.Value}, Tipo: {GetTokenType(match)}");
                 TokensEncontrados tokenEncontrado = new TokensEncontrados();
+                bool invalid = false;
                 if (GetTokenType(match) == "NUMBER")
                 {
                     //verificar se é int ou real
@@ -117,34 +131,75 @@ namespace LexicoProfessor
                 {
                     //como fazer a distinção quando é palavra reservadar ou identificador
                     var PalavraReservada = (from item in tokensLinguagem
-                                            where item.Value == match.Value         
+                                            where item.Value == match.Value
                                             select item.Key).ToList();
                     if (PalavraReservada.Count == 0)
                     {
                         tokenEncontrado.Codigo = 16;
                         tokenEncontrado.Token = "identificador";
                     }
-             
+                    else
+                    {
+                        tokenEncontrado.Codigo = pegarkey(match.Value);
+                        tokenEncontrado.Token = pegaValor(match.Value);
+                    }
+
 
                 }
-                if (GetTokenType(match) == "MISMATCH")
+                if (GetTokenType(match) == "MAIORIGUAL")
                 {
-                    tokenEncontrado.Codigo = pegarkey(match.Value);
-                    if(tokenEncontrado.Codigo == 0)
-                    {
-                        
-                        Console.WriteLine("Caractere irreconhecivel");
-                    }
+                    tokenEncontrado.Codigo = 29;
                     tokenEncontrado.Token = match.Value;
                 }
-                
-                tokensEncontrados.Add(tokenEncontrado);
+                if (GetTokenType(match) == "MENORIGUAL")
+                {
+                    tokenEncontrado.Codigo = 33;
+                    tokenEncontrado.Token = match.Value;
+                }
+                if (GetTokenType(match) == "DIFERENTE")
+                {
+                    tokenEncontrado.Codigo = 32;
+                    tokenEncontrado.Token = match.Value;
+                }
+                if (GetTokenType(match) == "PONTOPONTO")
+                {
+                    tokenEncontrado.Codigo = 45;
+                    tokenEncontrado.Token = match.Value;
+                }
+
+                if (GetTokenType(match) == "MISMATCH")
+                {
+                    if (match.Value == " ")
+                    {
+                        continue;
+                    }
+                    if (pegarkey(match.Value) == 0)
+                    {
+                        Console.WriteLine("Caractere irreconhecivel na linha tal");
+                        invalid = true;
+                    }
+                    else
+                    {
+                        
+                        tokenEncontrado.Codigo = pegarkey(match.Value);
+                        tokenEncontrado.Token = match.Value;
+                    }
+                   
+                }
+                if (GetTokenType(match) == "TESTE")
+                {
+                    Console.WriteLine("caiu");
+                }
+                if (invalid == false)
+                {
+                    tokensEncontrados.Add(tokenEncontrado);
+                }
             }
-            foreach(var linha in tokensEncontrados)
+            foreach (var linha in tokensEncontrados)
             {
-                Console.WriteLine(linha.Codigo.ToString(), linha.Token);
+                Console.WriteLine("Código: "+linha.Codigo.ToString()+" Token:"+linha.Token);
             }
-            
+
 
             // Função para determinar o tipo de um token com base no grupo de captura correspondente
             string GetTokenType(Match match)
