@@ -14,7 +14,7 @@ namespace LexicoProfessor
     {
         static void Main(string[] args)
         {
-            string path = @"C:\\Users\\lab101a\\Desktop\\teste2\\codigo.txt";
+            string path = @"C:\\Users\\misac\\Desktop\\compiladoress\\codigo.txt";
             string content = "";
             try
             {
@@ -106,13 +106,17 @@ namespace LexicoProfessor
             // Definição da especificação de tokens
             Tuple<string, string>[] tokenSpec = new Tuple<string, string>[]
             {
+                Tuple.Create("COMENTARIO",@"#(.*?)(\r?\n|$)"),
+                //Tuple.Create("COMENTARIOMULTI",@"#\*([\s\S]*?)\*#"),
                 Tuple.Create("NUMBER", @"\d+(\.\d+)?"),
                 Tuple.Create("WORD", @"[A-Za-z_]+\d*"),
                 Tuple.Create("SKIP",@"[\t]+"),
+                Tuple.Create("LINEFEED",@"[\r]+"),
                 Tuple.Create("MAIORIGUAL",@">=+"),
                 Tuple.Create("MENORIGUAL",@"<=+"),
                 Tuple.Create("DIFERENTE",@"<>"),
                 Tuple.Create("PONTOPONTO",@"\.\."),
+                
                 Tuple.Create("NEWLINE", @"\n"),
 
                // Tuple.Create("WHITESPACE", @"\s+"),
@@ -124,22 +128,31 @@ namespace LexicoProfessor
             string[] tokenRegexes = tokenSpec.Select(pair => $"(?<{pair.Item1}>{pair.Item2})").ToArray();
 
             string finalRegex = string.Join("|", tokenRegexes);
-            Console.WriteLine(finalRegex);
+            
             Regex tokenizer = new Regex(finalRegex);
 
-            // Exemplo de uso do tokenizer
-            string text = "1.55\nteste\nterceiralinha";
             MatchCollection matches = tokenizer.Matches(content);
             int linha = 1;
             foreach (Match match in matches)
             {
-                Console.WriteLine($"Token: {match.Value}, Tipo: {GetTokenType(match)}");
+               // Console.WriteLine($"Token: {match.Value}, Tipo: {GetTokenType(match)}");
                 TokensEncontrados tokenEncontrado = new TokensEncontrados();
                 bool invalid = false;
+                if(GetTokenType(match) == "COMENTARIOMULT")
+                {
+                    Console.WriteLine("Deu");
+                }
+                if(GetTokenType(match) == "COMENTARIO")
+                {
+                    string[] comentario = match.Value.Split('\n');
+                    linha += comentario.Length - 1;
+                    continue;
 
+                }
                 if(GetTokenType(match) == "NEWLINE")
                 {
                     linha++;
+                    continue;
                 }
                 if (GetTokenType(match) == "NUMBER")
                 {
@@ -147,11 +160,13 @@ namespace LexicoProfessor
                     {
                         tokenEncontrado.Codigo = 29;
                         tokenEncontrado.Token = "real";
+                        tokenEncontrado.Linha = linha; 
                     }
                     else
                     {
                         tokenEncontrado.Codigo = 14;
                         tokenEncontrado.Token = "inteiro";
+                        tokenEncontrado.Linha = linha;
                     }
                 }
                 if (GetTokenType(match) == "WORD")
@@ -164,11 +179,13 @@ namespace LexicoProfessor
                     {
                         tokenEncontrado.Codigo = 16;
                         tokenEncontrado.Token = "identificador";
+                        tokenEncontrado.Linha = linha;
                     }
                     else
                     {
                         tokenEncontrado.Codigo = pegarkey(match.Value);
                         tokenEncontrado.Token = pegaValor(match.Value);
+                        tokenEncontrado.Linha = linha;
                     }
 
 
@@ -177,23 +194,30 @@ namespace LexicoProfessor
                 {
                     tokenEncontrado.Codigo = 29;
                     tokenEncontrado.Token = match.Value;
+                    tokenEncontrado.Linha = linha;
                 }
                 if (GetTokenType(match) == "MENORIGUAL")
                 {
                     tokenEncontrado.Codigo = 33;
                     tokenEncontrado.Token = match.Value;
+                    tokenEncontrado.Linha = linha;
                 }
                 if (GetTokenType(match) == "DIFERENTE")
                 {
                     tokenEncontrado.Codigo = 32;
                     tokenEncontrado.Token = match.Value;
+                    tokenEncontrado.Linha = linha;
                 }
                 if (GetTokenType(match) == "PONTOPONTO")
                 {
                     tokenEncontrado.Codigo = 45;
                     tokenEncontrado.Token = match.Value;
+                    tokenEncontrado.Linha = linha;
                 }
-
+                if(GetTokenType(match)== "LINEFEED")
+                {
+                    continue;
+                }
                 if (GetTokenType(match) == "MISMATCH")
                 {
                     if (match.Value == " ")
@@ -202,7 +226,7 @@ namespace LexicoProfessor
                     }
                     if (pegarkey(match.Value) == 0)
                     {
-                        Console.WriteLine("Caractere irreconhecivel na linha tal");
+                        Console.WriteLine("Caractere irreconhecivel na linha "+linha);
                         invalid = true;
                     }
                     else
@@ -210,12 +234,9 @@ namespace LexicoProfessor
                         
                         tokenEncontrado.Codigo = pegarkey(match.Value);
                         tokenEncontrado.Token = match.Value;
+                        tokenEncontrado.Linha = linha;
                     }
                    
-                }
-                if (GetTokenType(match) == "TESTE")
-                {
-                    Console.WriteLine("caiu");
                 }
                 if (invalid == false)
                 {
@@ -224,7 +245,8 @@ namespace LexicoProfessor
             }
             foreach (var linhaTabela in tokensEncontrados)
             {
-                Console.WriteLine("Código: "+ linhaTabela.Codigo.ToString()+" Token:"+ linhaTabela.Token);
+                Console.WriteLine("Código: "+ linhaTabela.Codigo.ToString()+" Token: "+ linhaTabela.Token+" Linha: "+ linhaTabela.Linha);
+                
             }
 
 

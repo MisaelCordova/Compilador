@@ -11,11 +11,13 @@ namespace LexicoProfessor
     {
         private int codigo;
         private string token;
+        private int linha;
 
-        public TokensEncontrados(int codigo, string token)
+        public TokensEncontrados(int codigo, string token, int linha)
         {
             this.codigo = codigo;
             this.token = token;
+            this.linha = linha;
         }
         public TokensEncontrados()
         {
@@ -30,6 +32,11 @@ namespace LexicoProfessor
         {
             get => token;
             set => token = value;
+        }
+        public int Linha
+        {
+            get => linha;
+            set => linha = value;
         }
     }
 }
