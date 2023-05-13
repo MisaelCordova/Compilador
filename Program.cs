@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace LexicoProfessor
 {
@@ -13,7 +14,17 @@ namespace LexicoProfessor
     {
         static void Main(string[] args)
         {
-
+            string path = @"C:\\Users\\misac\\source\\repos\\LexicoProfessor\\codigo.txt";
+           
+            try
+            {
+                string content = File.ReadAllText(path);
+                Console.WriteLine(content);
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine($"Ocorreu um erro ao ler o arquivo: {e.Message}");
+            }
             List<TokensEncontrados> tokensEncontrados = new List<TokensEncontrados>();
             IDictionary<int, string> tokensLinguagem = new Dictionary<int, string>()
             {
@@ -95,13 +106,15 @@ namespace LexicoProfessor
             // Definição da especificação de tokens
             Tuple<string, string>[] tokenSpec = new Tuple<string, string>[]
             {
-                Tuple.Create("NUMBER", @"\d+"),
+                Tuple.Create("NUMBER", @"\d+(\.\d+)?"),
                 Tuple.Create("WORD", @"[A-Za-z_]+\d*"),
                 Tuple.Create("SKIP",@"[\t]+"),
                 Tuple.Create("MAIORIGUAL",@">=+"),
                 Tuple.Create("MENORIGUAL",@"<=+"),
                 Tuple.Create("DIFERENTE",@"<>"),
                 Tuple.Create("PONTOPONTO",@"\.\."),
+                Tuple.Create("NEWLINE", @"\n"),
+
                // Tuple.Create("WHITESPACE", @"\s+"),
                 Tuple.Create("MISMATCH", @"."),
 
@@ -115,17 +128,31 @@ namespace LexicoProfessor
             Regex tokenizer = new Regex(finalRegex);
 
             // Exemplo de uso do tokenizer
-            string text = " + .. {} /";
+            string text = "1.55\nteste\nterceiralinha";
             MatchCollection matches = tokenizer.Matches(text);
-            
+            int linha = 1;
             foreach (Match match in matches)
             {
                 Console.WriteLine($"Token: {match.Value}, Tipo: {GetTokenType(match)}");
                 TokensEncontrados tokenEncontrado = new TokensEncontrados();
                 bool invalid = false;
+
+                if(GetTokenType(match) == "NEWLINE")
+                {
+                    linha++;
+                }
                 if (GetTokenType(match) == "NUMBER")
                 {
-                    //verificar se é int ou real
+                    if (match.Value.Contains("."))
+                    {
+                        tokenEncontrado.Codigo = 29;
+                        tokenEncontrado.Token = "real";
+                    }
+                    else
+                    {
+                        tokenEncontrado.Codigo = 14;
+                        tokenEncontrado.Token = "inteiro";
+                    }
                 }
                 if (GetTokenType(match) == "WORD")
                 {
@@ -195,9 +222,9 @@ namespace LexicoProfessor
                     tokensEncontrados.Add(tokenEncontrado);
                 }
             }
-            foreach (var linha in tokensEncontrados)
+            foreach (var linhaTabela in tokensEncontrados)
             {
-                Console.WriteLine("Código: "+linha.Codigo.ToString()+" Token:"+linha.Token);
+                Console.WriteLine("Código: "+ linhaTabela.Codigo.ToString()+" Token:"+ linhaTabela.Token);
             }
 
 
