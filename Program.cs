@@ -14,11 +14,11 @@ namespace LexicoProfessor
     {
         static void Main(string[] args)
         {
-            string path = @"C:\\Users\\misac\\source\\repos\\LexicoProfessor\\codigo.txt";
-           
+            string path = @"C:\\Users\\lab101a\\Desktop\\teste2\\codigo.txt";
+            string content = "";
             try
             {
-                string content = File.ReadAllText(path);
+                content = File.ReadAllText(path);
                 Console.WriteLine(content);
             }
             catch (IOException e)
@@ -129,7 +129,7 @@ namespace LexicoProfessor
 
             // Exemplo de uso do tokenizer
             string text = "1.55\nteste\nterceiralinha";
-            MatchCollection matches = tokenizer.Matches(text);
+            MatchCollection matches = tokenizer.Matches(content);
             int linha = 1;
             foreach (Match match in matches)
             {
