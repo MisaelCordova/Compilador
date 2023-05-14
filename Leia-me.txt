@@ -1,0 +1,7 @@
+Requisitos para rodar o analisador léxico:
+*Estar rodando o windows, pois a compilação foi para windows
+*Ter instalado o .net 3.5 ou superior
+Executar o Arquivo LexicoProfessor.exe que está dentro da pasta bin/Debug
+Caso tenha Algum problema pode mandar um whats no (48)998145731
+Grupo: Bruno Mariani Lorenzoni, Misael córdova, Guilherme de Bona de Brida
+ 

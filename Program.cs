@@ -14,12 +14,51 @@ namespace LexicoProfessor
     {
         static void Main(string[] args)
         {
-            string path = @"C:\\Users\\misac\\Desktop\\compiladoress\\codigo.txt";
+            string opcao;
+            string path = "";
+            do
+            {
+                Console.Clear();
+                Console.WriteLine("Estão disponibilizados 3 exemplos de Código");
+                Console.WriteLine("Digite o código correspondente ao número do exemplo para roda-lo ou s para sair.");
+                Console.WriteLine("Digite a opção 4 para buscar um txt em uma pasta de seu computador");
+                opcao = Console.ReadKey(true).KeyChar.ToString().ToLower();
+                if (opcao == "1")
+                {
+                    Console.WriteLine("Opção escolhida: "+ opcao.ToString());
+                    Analise(@"Exemplo1.txt");
+                }
+                else if(opcao == "2")
+                {
+                    Console.WriteLine("Opção escolhida: "+ opcao.ToString());
+                    Analise(@"Exemplo2.txt");
+                }
+                else if(opcao == "3")
+                {
+                    Console.WriteLine("Opção escolhida: "+ opcao.ToString());
+                    Analise(@"Exemplo3.txt");
+                }
+                else if(opcao == "4")
+                {
+                    Console.WriteLine("Opção escolhida: ", opcao);
+                    Console.WriteLine("Digite o Caminho que deseja buscar");
+                    path = Console.ReadLine();
+                    Analise(path);
+                }
+                else if(opcao!="s")
+                {
+                    Console.WriteLine("Opção inválida");
+                    Console.ReadKey();
+                }
+            } while (opcao != "s");
+             void Analise(string caminho)
+            {
+
+            // path = @"C:\\Users\\misac\\Desktop\\compiladoress\\codigo.txt";
             string content = "";
             try
             {
-                content = File.ReadAllText(path);
-                Console.WriteLine(content);
+                content = File.ReadAllText(caminho);
             }
             catch (IOException e)
             {
@@ -106,8 +145,9 @@ namespace LexicoProfessor
             // Definição da especificação de tokens
             Tuple<string, string>[] tokenSpec = new Tuple<string, string>[]
             {
-                Tuple.Create("COMENTARIO",@"#(.*?)(\r?\n|$)"),
-                //Tuple.Create("COMENTARIOMULTI",@"#\*([\s\S]*?)\*#"),
+                Tuple.Create("COMENTARIO",@"#\*(.*?|\n)*?\*#"),
+                Tuple.Create("STRING", "\"(.*?)\""),
+                Tuple.Create("LITERALS",@"\!\w+"),
                 Tuple.Create("NUMBER", @"\d+(\.\d+)?"),
                 Tuple.Create("WORD", @"[A-Za-z_]+\d*"),
                 Tuple.Create("SKIP",@"[\t]+"),
@@ -116,40 +156,82 @@ namespace LexicoProfessor
                 Tuple.Create("MENORIGUAL",@"<=+"),
                 Tuple.Create("DIFERENTE",@"<>"),
                 Tuple.Create("PONTOPONTO",@"\.\."),
-                
                 Tuple.Create("NEWLINE", @"\n"),
-
-               // Tuple.Create("WHITESPACE", @"\s+"),
+                Tuple.Create("CHAR",@"'(.*?)'"),
+                Tuple.Create("COMENTARIOSINGLE",@"##(.*?)\n"),
                 Tuple.Create("MISMATCH", @"."),
+
+
 
             };
 
             // Criando a expressão regular que reconhece cada tipo de token
             string[] tokenRegexes = tokenSpec.Select(pair => $"(?<{pair.Item1}>{pair.Item2})").ToArray();
-
             string finalRegex = string.Join("|", tokenRegexes);
-            
             Regex tokenizer = new Regex(finalRegex);
 
+
+            //uso do tokenizador    
             MatchCollection matches = tokenizer.Matches(content);
+            bool blocoComentario = false;
             int linha = 1;
             foreach (Match match in matches)
             {
-               // Console.WriteLine($"Token: {match.Value}, Tipo: {GetTokenType(match)}");
+                var teste = GetTokenType(match);
+                // Console.WriteLine($"Token: {match.Value}, Tipo: {GetTokenType(match)}");
                 TokensEncontrados tokenEncontrado = new TokensEncontrados();
                 bool invalid = false;
-                if(GetTokenType(match) == "COMENTARIOMULT")
+                if (GetTokenType(match) == "SKIP")
                 {
-                    Console.WriteLine("Deu");
-                }
-                if(GetTokenType(match) == "COMENTARIO")
-                {
-                    string[] comentario = match.Value.Split('\n');
-                    linha += comentario.Length - 1;
                     continue;
-
                 }
-                if(GetTokenType(match) == "NEWLINE")
+                if (GetTokenType(match) == "COMENTARIOSINGLE")
+                {
+                    if (linha > 1)
+                    {
+                        linha--;
+                    }
+                    continue;
+                }
+                if (GetTokenType(match) == "COMENTARIO")
+                {
+                    if (match.Value.StartsWith("#*"))
+                    {
+                        blocoComentario = true;
+                        continue;
+                    }
+                    else if (match.Value.EndsWith("*#"))
+                    {
+                        blocoComentario = false;
+                        continue;
+                    }
+                    if (blocoComentario)
+                        continue;
+                }
+                if (GetTokenType(match) == "STRING")
+                {
+                    tokenEncontrado.Codigo = 38;
+                    tokenEncontrado.Token = "nomestring";
+                    tokenEncontrado.Linha = linha;
+                }
+                if (GetTokenType(match) == "CHAR")
+                {
+                    if (match.Value.Length > 1)
+                    {
+                        Console.WriteLine("Erro: variáveis do tipo char não podem receber mais que um caractere");
+                        continue;
+                    }
+                    tokenEncontrado.Codigo = 39;
+                    tokenEncontrado.Token = "nomechar";
+                    tokenEncontrado.Linha = linha;
+                }
+                if (GetTokenType(match) == "LITERALS")
+                {
+                    tokenEncontrado.Codigo = 13;
+                    tokenEncontrado.Token = "literal";
+                    tokenEncontrado.Linha = linha;
+                }
+                if (GetTokenType(match) == "NEWLINE")
                 {
                     linha++;
                     continue;
@@ -158,14 +240,14 @@ namespace LexicoProfessor
                 {
                     if (match.Value.Contains("."))
                     {
-                        tokenEncontrado.Codigo = 29;
-                        tokenEncontrado.Token = "real";
-                        tokenEncontrado.Linha = linha; 
+                        tokenEncontrado.Codigo = 36;
+                        tokenEncontrado.Token = "numreal";
+                        tokenEncontrado.Linha = linha;
                     }
                     else
                     {
-                        tokenEncontrado.Codigo = 14;
-                        tokenEncontrado.Token = "inteiro";
+                        tokenEncontrado.Codigo = 37;
+                        tokenEncontrado.Token = "numinteiro";
                         tokenEncontrado.Linha = linha;
                     }
                 }
@@ -202,6 +284,7 @@ namespace LexicoProfessor
                     tokenEncontrado.Token = match.Value;
                     tokenEncontrado.Linha = linha;
                 }
+
                 if (GetTokenType(match) == "DIFERENTE")
                 {
                     tokenEncontrado.Codigo = 32;
@@ -214,7 +297,7 @@ namespace LexicoProfessor
                     tokenEncontrado.Token = match.Value;
                     tokenEncontrado.Linha = linha;
                 }
-                if(GetTokenType(match)== "LINEFEED")
+                if (GetTokenType(match) == "LINEFEED")
                 {
                     continue;
                 }
@@ -226,27 +309,28 @@ namespace LexicoProfessor
                     }
                     if (pegarkey(match.Value) == 0)
                     {
-                        Console.WriteLine("Caractere irreconhecivel na linha "+linha);
+                        Console.WriteLine("Caractere irreconhecivel na linha " + linha);
                         invalid = true;
                     }
                     else
                     {
-                        
+
                         tokenEncontrado.Codigo = pegarkey(match.Value);
                         tokenEncontrado.Token = match.Value;
                         tokenEncontrado.Linha = linha;
                     }
-                   
+
                 }
                 if (invalid == false)
                 {
                     tokensEncontrados.Add(tokenEncontrado);
                 }
             }
+                Console.WriteLine("TABELA DE TOKENS ENCONTRADOS");
             foreach (var linhaTabela in tokensEncontrados)
             {
-                Console.WriteLine("Código: "+ linhaTabela.Codigo.ToString()+" Token: "+ linhaTabela.Token+" Linha: "+ linhaTabela.Linha);
-                
+                Console.WriteLine("Código: " + linhaTabela.Codigo.ToString() + " Token: " + linhaTabela.Token + " Linha: " + linhaTabela.Linha);
+
             }
 
 
@@ -264,6 +348,7 @@ namespace LexicoProfessor
                 return "UNKNOWN";
             }
             Console.ReadKey();
+        }
 
         }
     }
