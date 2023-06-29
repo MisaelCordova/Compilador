@@ -1,14 +1,8 @@
-##exemplo 1
-program multiplicacao; 
-#*
-desenvolvimento
-do programa
-*#
 procedure funcao( identificador : integer ; ) 
 begin;
 
-declaravariaveis texto : string = "teste"
-end ;
+declaravariaveis texto : string = "teste";
+end
 const nomeVariavel = integer;
 .
 

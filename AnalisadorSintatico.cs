@@ -26,7 +26,7 @@ namespace LexicoProfessor
         }
 
         int[,] producoes = new int[,] {
-        {10,17,43,55,47,0,0,0,0,0,0,0,0,0},//P1
+       {10,17,43,55,47,0,0,0,0,0,0,0,0,0},//P1
 		{56,57,58,59,0,0,0,0,0,0,0,0,0,0},//P2
 		{24,17,32,60,43,61,0,0,0,0,0,0,0,0},//P3
 		{18,0,0,0,0,0,0,0,0,0,0,0,0,0},//P4
@@ -103,12 +103,13 @@ namespace LexicoProfessor
 		{67,43,68,0,0,0,0,0,0,0,0,0,0,0},//P75
 		{14,0,0,0,0,0,0,0,0,0,0,0,0,0}//P76
         };
-        
-        
+
+
+
         int[] addToken()
         {
             int n = tokens.Count();
-            int[] tokensAnalizador = new int[n+1] ;
+            int[] tokensAnalizador = new int[n] ;
             int i = 0;
             foreach(TokensEncontrados t in tokens)
             {
@@ -130,9 +131,10 @@ namespace LexicoProfessor
                     tabParsing[i, j] = 0;
                 }
             }
-
-            tabParsing[54, 10] = 1;
+          
+            tabParsing[55, 1] = 27;
             tabParsing[55, 11] = 2;
+            tabParsing[55, 19] = 36;
             tabParsing[55, 23] = 2;
             tabParsing[55, 24] = 2;
             tabParsing[55, 27] = 2;
@@ -181,6 +183,7 @@ namespace LexicoProfessor
             tabParsing[67, 19] = 36;
             tabParsing[67, 20] = 37;
             tabParsing[67, 26] = 34;
+            tabParsing[67, 27] = 27;
             tabParsing[67, 43] = 37;
             tabParsing[68, 1] = 75;
             tabParsing[68, 2] = 75;
@@ -287,6 +290,7 @@ namespace LexicoProfessor
             tabParsing[81, 50] = 74;
 
 
+
             int[] pilha = new int[] { 52 };
 
             int[] producaoInicial = producoes.Cast<int>().Take(14).ToArray();
@@ -296,7 +300,7 @@ namespace LexicoProfessor
             int[] tokensAnalisador = addToken();
             int X = pilha[0];
             int a = tokensAnalisador[0];
-
+            
             while (X != 52)
             {
                 Console.WriteLine(X);
@@ -315,7 +319,7 @@ namespace LexicoProfessor
                         if (X == a)
                         {
                             pilha = pilha.Skip(1).ToArray();
-                            tokensAnalisador = tokensAnalisador.Skip(1).ToArray();
+                             tokensAnalisador = tokensAnalisador.Skip(1).ToArray();
                             X = pilha[0];
                             if (tokensAnalisador.Length != 0)
                             {
@@ -324,14 +328,36 @@ namespace LexicoProfessor
                         }
                         else
                         {
-                            Console.WriteLine("Error no token :"+ X +" esperado :" + a);
+                            if (X == 18)
+                            {
+                                pilha = pilha.Skip(1).ToArray();
+                              //  tokensAnalisador = tokensAnalisador.Skip(1).ToArray();
+                                X = pilha[0];
+                             //   if (tokensAnalisador.Length != 0)
+                                {
+                               //     a = tokensAnalisador[0];
+                                }
+                                continue;
+
+                            }
+                               
+                            foreach(TokensEncontrados t in tokens)
+                            {
+                                if(t.Codigo == a-1)
+                                {
+                                    Console.WriteLine("Erro na linha "+t.Linha+" codigo "+t.Codigo+" token: "+t.Token+" token esperado: "+X);
+                                }
+
+                            }
+                            
                             break;
                         }
                     }
                     else
                     {
-                        int[] topo = producoes.Cast<int>().Skip((tabParsing[X, a] - 1)*14).Take(14).Concat(pilha).ToArray();
-                       // int[] topo = producoes.Cast<int>().Skip((tabParsing[X, a] - 1) * 3).Take(3).Concat(pilha).ToArray();
+                        Console.WriteLine(tabParsing[X, a]+" Valor da tabela");
+                        Console.WriteLine(X+"Valor de x Antes do segundo else");
+                        int[] topo = producoes.Cast<int>().Skip((tabParsing[X, a] - 1) * 14).Take(14).Concat(pilha).ToArray();
                         if (topo[0] == 1)
                         {
                             X = topo[0];
@@ -340,9 +366,13 @@ namespace LexicoProfessor
                         {
                             if (topo[0] != 0)
                             {
+                                Console.WriteLine("Pilha antes: "+string.Join(", ", pilha));
                                 pilha = pilha.Skip(1).ToArray();
+                                Console.WriteLine("Pilha depois: " + string.Join(", ", pilha));
                                 pilha = producoes.Cast<int>().Skip((tabParsing[X, a] - 1) * 14).Take(14).Concat(pilha).ToArray();
+                                Console.WriteLine("Pilha pilha depois do segundo: " + string.Join(", ", pilha));
                                 pilha = pilha.Where(val => val != 0).ToArray();
+                                Console.WriteLine("Pilha pilha depois do terceiro: " + string.Join(", ", pilha));
                                 X = pilha[0];
                             }
                             else
@@ -355,11 +385,11 @@ namespace LexicoProfessor
                     }
                 }
             }
-
+            
             Console.WriteLine("Pilha:");
             Console.WriteLine(string.Join(", ", pilha));
             Console.WriteLine("Entrada:");
-            Console.WriteLine(string.Join(", ", tokens));
+  
             Console.WriteLine("Sentença reconhecida com sucesso");
             Console.ReadKey();
 
