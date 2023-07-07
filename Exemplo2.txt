@@ -1,19 +1,7 @@
-write(2+2); 
-write(2-2);
-write(2*2); 
-write(2/2);
-a = b
-a <> b
-a > b
-a < b
-a >= b
-a <= b
-a and b
-a or b
-read(idade);
-	read(idade, numero);
-
-for [ num =  0] to [ 10 ] do
-begin 
-write(num);
+program multiplicacao; 
+begin;
+for [num = 0] to [ 10 ] do
+begin
 end;
+end
+.
