@@ -1,8 +1,10 @@
+program multiplicacao;
 procedure funcao( identificador : integer ; ) 
+const nomeVariavel = integer;
 begin;
 
 declaravariaveis texto : string = "teste";
 end
-const nomeVariavel = integer;
+
 .
 

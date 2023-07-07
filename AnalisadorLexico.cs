@@ -170,7 +170,7 @@ namespace LexicoProfessor
                 }
                 if (GetTokenType(match) == "STRING")
                 {
-                    tokenEncontrado.Codigo = 38;
+                    tokenEncontrado.Codigo = 39;
                     tokenEncontrado.Token = "nomestring";
                     tokenEncontrado.Linha = linha;
                 }
@@ -181,13 +181,13 @@ namespace LexicoProfessor
                         Console.WriteLine("Erro: variáveis do tipo char não podem receber mais que um caractere");
                         continue;
                     }
-                    tokenEncontrado.Codigo = 39;
+                    tokenEncontrado.Codigo = 30;
                     tokenEncontrado.Token = "nomechar";
                     tokenEncontrado.Linha = linha;
                 }
                 if (GetTokenType(match) == "LITERALS")
                 {
-                    tokenEncontrado.Codigo = 13;
+                    tokenEncontrado.Codigo = 14;
                     tokenEncontrado.Token = "literal";
                     tokenEncontrado.Linha = linha;
                 }
@@ -200,13 +200,13 @@ namespace LexicoProfessor
                 {
                     if (match.Value.Contains("."))
                     {
-                        tokenEncontrado.Codigo = 36;
+                        tokenEncontrado.Codigo = 37;
                         tokenEncontrado.Token = "numreal";
                         tokenEncontrado.Linha = linha;
                     }
                     else
                     {
-                        tokenEncontrado.Codigo = 37;
+                        tokenEncontrado.Codigo = 38;
                         tokenEncontrado.Token = "numinteiro";
                         tokenEncontrado.Linha = linha;
                     }
@@ -232,26 +232,26 @@ namespace LexicoProfessor
                 }
                 if (GetTokenType(match) == "MAIORIGUAL")
                 {
-                    tokenEncontrado.Codigo = 29;
+                    tokenEncontrado.Codigo = 30;
                     tokenEncontrado.Token = match.Value;
                     tokenEncontrado.Linha = linha;
                 }
                 if (GetTokenType(match) == "MENORIGUAL")
                 {
-                    tokenEncontrado.Codigo = 33;
+                    tokenEncontrado.Codigo = 34;
                     tokenEncontrado.Token = match.Value;
                     tokenEncontrado.Linha = linha;
                 }
 
                 if (GetTokenType(match) == "DIFERENTE")
                 {
-                    tokenEncontrado.Codigo = 32;
+                    tokenEncontrado.Codigo = 33;
                     tokenEncontrado.Token = match.Value;
                     tokenEncontrado.Linha = linha;
                 }
                 if (GetTokenType(match) == "PONTOPONTO")
                 {
-                    tokenEncontrado.Codigo = 45;
+                    tokenEncontrado.Codigo = 46;
                     tokenEncontrado.Token = match.Value;
                     tokenEncontrado.Linha = linha;
                 }
@@ -290,8 +290,9 @@ namespace LexicoProfessor
                 Console.WriteLine("Código: " + linhaTabela.Codigo.ToString() + " Token: " + linhaTabela.Token + " Linha: " + linhaTabela.Linha);
 
             }
-            AnalisadorSintatico analisador = new AnalisadorSintatico(tokensEncontrados);
-            analisador.Analisar();
+            AnalisadorSintatico analisador = new AnalisadorSintatico();
+
+            analisador.Analisar(new Gramatica(), tokensEncontrados);
             // Função para determinar o tipo de um token com base no grupo de captura correspondente
             string GetTokenType(Match match)
             {
